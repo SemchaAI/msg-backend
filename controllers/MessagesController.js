@@ -6,6 +6,7 @@ export const getAll = async (req, res) => {
     const limit = 15;
 
     const newMessages = await MessageModel.find().sort({ createdAt: -1 });
+
     const pageLimit = Math.ceil(newMessages.length / limit);
     if (page <= 0) {
       page = 1;
