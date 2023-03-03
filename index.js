@@ -25,6 +25,14 @@ import {
   delAvatar,
   authById,
   updateAvatars,
+  findOne,
+  findRandom,
+  addFriend,
+  removeFriendReq,
+  addFriendReq,
+  getGroupChat,
+  getGroupChats,
+  createMessage,
 } from "./controllers/index.js";
 import { handleValidationErrors, checkAuth } from "./utils/index.js";
 
@@ -72,8 +80,18 @@ app.post(
     });
   }
 );
-
 app.post("/user/delete/avatar", checkAuth, delAvatar);
+
+app.get("/find/user", checkAuth, findOne);
+app.get("/find/random", checkAuth, findRandom);
+app.post("/add/friend", checkAuth, addFriend);
+app.put("/delete/friendReq/:id", checkAuth, removeFriendReq);
+app.put("/add/friendReq/:id", checkAuth, addFriendReq);
+app.get("/group/chats", checkAuth, getGroupChats);
+app.get("/group/chat/:id/:page", checkAuth, getGroupChat);
+app.post("/group/chat/message/:id", checkAuth, createMessage);
+
+//////////////////////////////////
 
 app.get("/message", checkAuth, getAll);
 app.get("/message/:id", checkAuth, getOne);
