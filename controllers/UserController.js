@@ -20,6 +20,7 @@ export const register = async (req, res) => {
       email: req.body.email,
       nickname: req.body.nickname,
       avatarUrl: req.body.avatarUrl,
+      gender: req.body.gender,
       passwordHash: hash,
     });
 
@@ -113,7 +114,15 @@ export const authMe = async (req, res) => {
 };
 export const authById = async (req, res) => {
   try {
-    const user = await UserModel.findById(req.body.id);
+    let flag = false;
+    if (req.params.id === "CurrentUser") {
+      req.params.id = req.userId;
+    }
+
+    if (req.userId === req.params.id) {
+      flag = true;
+    }
+    const user = await UserModel.findById(req.params.id);
 
     if (!user) {
       return res.status(404).json({
@@ -123,12 +132,31 @@ export const authById = async (req, res) => {
 
     const { passwordHash, ...userData } = user._doc;
 
-    res.json({ ...userData });
+    res.json({ ...userData, flag });
 
     res.json({
       succes: true,
     });
   } catch (error) {}
+};
+export const updStatus = async (req, res) => {
+  try {
+    const user = await UserModel.findByIdAndUpdate(req.userId, {
+      status: req.body.status,
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        message: "Status undefined",
+      });
+    }
+    const { passwordHash, ...userData } = user._doc;
+    res.json({ ...userData });
+  } catch (error) {
+    res.status(500).json({
+      message: "Cannot load avatar, verify data",
+    });
+  }
 };
 export const updAvatar = async (req, res) => {
   try {
@@ -278,9 +306,9 @@ export const addFriendReq = async (req, res) => {
     const id = req.params.id;
 
     const Me = await UserModel.findById(myId);
-    console.log(Me);
+    // console.log(Me.gender);
     const MyFriend = await UserModel.findById(id);
-
+    //console.log(MyFriend.gender);
     //   {
     //     _id: myId,
     //   },
@@ -301,6 +329,7 @@ export const addFriendReq = async (req, res) => {
           text: "Hello my friend!",
           avatarUrl: Me.avatarUrl,
           nickname: Me.nickname,
+          gender: Me.gender,
           user: Me._id,
         },
       ],
@@ -322,6 +351,7 @@ export const addFriendReq = async (req, res) => {
           _id: user._doc._id,
           avatarUrl: MyFriend._doc.avatarUrl,
           nickname: MyFriend._doc.nickname,
+          gender: MyFriend._doc.gender,
           userId: MyFriend._doc._id,
         },
       },
@@ -333,6 +363,7 @@ export const addFriendReq = async (req, res) => {
           _id: user._doc._id,
           avatarUrl: Me._doc.avatarUrl,
           nickname: Me._doc.nickname,
+          gender: Me._doc.gender,
           userId: Me._doc._id,
         },
       },
@@ -425,6 +456,7 @@ export const createMessage = async (req, res) => {
           user: req.userId,
           avatarUrl: req.body.avatarUrl,
           nickname: req.body.nickname,
+          gender: req.body.gender,
           text: req.body.text,
         },
       },
