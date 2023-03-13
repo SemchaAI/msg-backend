@@ -125,6 +125,7 @@ export const create = async (req, res) => {
       emodji: req.body.emodji,
       user: req.userId,
       nickname: req.body.nickname,
+      gender: req.body.gender,
       avatarUrl: req.body.avatarUrl,
     });
 
