@@ -15,6 +15,11 @@ const MessageShema = new Schema(
       type: String,
       ref: "User",
     },
+    gender: {
+      type: String,
+      default: "stone",
+      ref: "User",
+    },
     avatarUrl: String,
   },
   { timestamps: true }
