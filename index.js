@@ -33,6 +33,7 @@ import {
   getGroupChat,
   getGroupChats,
   createMessage,
+  updStatus,
 } from "./controllers/index.js";
 import { handleValidationErrors, checkAuth } from "./utils/index.js";
 
@@ -66,8 +67,10 @@ mongoose
 app.post("/auth/login", loginValid, handleValidationErrors, login);
 app.post("/auth/register", registerValid, handleValidationErrors, register);
 app.get("/auth/me", checkAuth, authMe);
-app.get("/auth/user", checkAuth, authById);
+app.get("/auth/user/:id", checkAuth, authById);
 app.put("/user/avatar", checkAuth, updAvatar);
+app.put("/user/status", checkAuth, updStatus);
+
 app.post("/user/update/avatars", checkAuth, updateAvatars);
 
 app.post(
