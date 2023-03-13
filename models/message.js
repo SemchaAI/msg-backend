@@ -6,9 +6,9 @@ const messageShema = new Schema(
       type: String,
       required: true,
     },
-    viewsCount: {
-      type: Number,
-      default: 0,
+    gender: {
+      type: String,
+      default: "stone",
     },
     user: {
       type: mongoose.Schema.Types.ObjectId,
