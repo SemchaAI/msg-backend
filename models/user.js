@@ -16,9 +16,22 @@ const UserShema = new Schema(
       type: String,
       required: true,
     },
+    gender: {
+      type: String,
+      required: true,
+    },
+    status: {
+      type: String,
+      default: "smile pls",
+      required: true,
+    },
     friends: [], //GroupId
     friendsReq: [],
-    avatarUrl: String,
+    avatarUrl: {
+      type: String,
+      required: true,
+      default: "/uploads/avatar.svg",
+    },
   },
   { timestamps: true }
 );
