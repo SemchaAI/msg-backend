@@ -4,6 +4,7 @@ import fs from "fs";
 import { validationResult } from "express-validator";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
+import user from "../models/user.js";
 
 export const register = async (req, res) => {
   try {
@@ -264,6 +265,8 @@ export const addFriend = async (req, res) => {
         nickname: req.body.nickname,
         email: req.body.email,
         avatarUrl: req.body.avatarUrl,
+        gender: req.body.gender,
+        alert: false,
       },
     });
 
@@ -300,6 +303,42 @@ export const removeFriendReq = async (req, res) => {
     });
   }
 };
+export const deleteFriend = async (req, res) => {
+  try {
+    const myId = req.userId;
+    const id = req.params.id;
+
+    const user = await UserModel.findOne({
+      _id: myId,
+    });
+
+    const friend = user.friends.filter((el) => String(el.userId) === id);
+
+    const groupD = await GroupModel.findOneAndDelete({
+      _id: friend[0]._id,
+    });
+    const friendD = await UserModel.findOneAndUpdate(
+      {
+        _id: myId,
+      },
+      { $pull: { friends: { userId: id } } }
+    );
+    const inverseFriendD = await UserModel.findOneAndUpdate(
+      {
+        _id: id,
+      },
+      { $pull: { friends: { userId: myId } } }
+    );
+    res.status(200).json({
+      message: "succes",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Cannot delete friend, verify connection",
+    });
+  }
+};
+
 export const addFriendReq = async (req, res) => {
   try {
     const myId = req.userId;
@@ -331,6 +370,7 @@ export const addFriendReq = async (req, res) => {
           nickname: Me.nickname,
           gender: Me.gender,
           user: Me._id,
+          alert: false,
         },
       ],
       users: [
@@ -380,7 +420,7 @@ export const addFriendReq = async (req, res) => {
 
 export const getGroupChats = async (req, res) => {
   try {
-    const user = await UserModel.findById(req.userId);
+    const user = await UserModel.findByIdAndUpdate(req.userId);
     const groups = await GroupModel.find({ _id: { $in: user.friends } });
     if (!groups) {
       return res.status(404).json({
@@ -398,26 +438,34 @@ export const getGroupChats = async (req, res) => {
 
 export const getGroupChat = async (req, res) => {
   try {
+    const user = await UserModel.findByIdAndUpdate(
+      req.userId,
+      { $set: { "friends.$[el].alert": false } },
+      { arrayFilters: [{ "el.userId": req.params.userId }], multi: true }
+    );
+    // console.log(req.params.userId);
+    //console.log(user.friends);
+    const msgs = await GroupModel.updateMany(
+      { _id: req.params.id },
+      { $set: { "chat.$[el].saw": true } },
+      { arrayFilters: [{ "el.user": { $ne: req.userId } }], multi: true }
+    );
+    //console.log(msgs);
     let page = req.params.page;
     const limit = 10;
 
-    const newMessages = await GroupModel.find({
-      _id: req.params.id,
-    });
-    // const temp = await GroupModel.aggregate([
-    //   {
-    //     $set: {
-    //       chat: {
-    //         $sortArray: {
-    //           input: "$chat",
-    //           sortBy: { createdAt: -1 },
-    //         },
-    //       },
-    //     },
-    //   },
-    // ]);
-    // console.log(temp);
-    const onlyChat = newMessages[0].chat.slice(0).reverse();
+    const newMessages = await GroupModel.findById(
+      {
+        _id: req.params.id,
+      }
+      // {
+      //   $set: {
+      //     "chat.$[].saw": true,
+      //   },
+      // }
+    );
+
+    const onlyChat = newMessages.chat.slice(0).reverse();
 
     const pageLimit = Math.ceil(onlyChat.length / limit);
     if (page <= 0) {
@@ -431,7 +479,6 @@ export const getGroupChat = async (req, res) => {
     const endIndex = page * limit;
 
     const newSortedMessages = onlyChat.slice(startIndex, endIndex);
-
     res.json(newSortedMessages);
     // const group = await GroupModel.find({ _id: req.params.id });
     // if (!group) {
@@ -461,6 +508,15 @@ export const createMessage = async (req, res) => {
         },
       },
     });
+
+    const friendInfo = user.users.filter((el) => String(el._id) !== req.userId);
+    //console.log(friendInfo[0]._id);
+    const alert = await UserModel.findByIdAndUpdate(
+      friendInfo[0]._id,
+      { $set: { "friends.$[el].alert": true } },
+      { arrayFilters: [{ "el.userId": req.userId }], multi: true }
+    );
+    console.log(alert);
     if (!user) {
       return res.status(404).json({
         message: "User undefined",
