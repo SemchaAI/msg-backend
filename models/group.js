@@ -20,6 +20,10 @@ const MessageShema = new Schema(
       default: "stone",
       ref: "User",
     },
+    saw: {
+      type: Boolean,
+      default: false,
+    },
     avatarUrl: String,
   },
   { timestamps: true }
