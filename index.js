@@ -34,6 +34,7 @@ import {
   getGroupChats,
   createMessage,
   updStatus,
+  deleteFriend,
 } from "./controllers/index.js";
 import { handleValidationErrors, checkAuth } from "./utils/index.js";
 
@@ -89,9 +90,10 @@ app.get("/find/user", checkAuth, findOne);
 app.get("/find/random", checkAuth, findRandom);
 app.post("/add/friend", checkAuth, addFriend);
 app.put("/delete/friendReq/:id", checkAuth, removeFriendReq);
+app.put("/delete/friend/:id", checkAuth, deleteFriend);
 app.put("/add/friendReq/:id", checkAuth, addFriendReq);
 app.get("/group/chats", checkAuth, getGroupChats);
-app.get("/group/chat/:id/:page", checkAuth, getGroupChat);
+app.get("/group/chat/:id/:userId/:page", checkAuth, getGroupChat);
 app.post("/group/chat/message/:id", checkAuth, createMessage);
 
 //////////////////////////////////
